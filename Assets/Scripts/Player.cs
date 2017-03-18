@@ -45,4 +45,9 @@ public class Player : MonoBehaviour
         velocity += polarity.MagnetVelocity;
         controller.Move(velocity * Time.deltaTime);
     }
+
+    public void ResetVelocity()
+    {
+        velocity = Vector3.zero;
+    }
 }

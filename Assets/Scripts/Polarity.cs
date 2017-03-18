@@ -25,7 +25,6 @@ public class Polarity : MonoBehaviour
 	void Update()
 	{
         ChangePolarity();
-
     }
 
     void ChangePolarity()
@@ -78,6 +77,14 @@ public class Polarity : MonoBehaviour
                 }
             }
             return velocity;
+        }
+    }
+
+    public Pole PlayerPolarity
+    {
+        get
+        {
+            return polarity;
         }
     }
 

@@ -6,21 +6,28 @@
 public class Controller2D : MonoBehaviour
 {
     public LayerMask collisionMask;
+    public LayerMask magnetMask;
 
-    const float skinWidth = .015f;
+    private const float skinWidth = .015f;
     public int horizontalRayCount = 4;
     public int verticalRayCount = 4;
 
-    float horizontalRaySpacing;
-    float verticalRaySpacing;
+    private float horizontalRaySpacing;
+    private float verticalRaySpacing;
 
-    BoxCollider2D boxCollider;
-    RaycastOrigins raycastOrigins;
+    private Polarity polarity;
+    private Player player;
+    public float wallClimbSpeed;
+
+    private BoxCollider2D boxCollider;
+    private RaycastOrigins raycastOrigins;
     public CollisionInfo collisions;
 
     void Start()
     {
         boxCollider = GetComponent<BoxCollider2D>();
+        player = GetComponent<Player>();
+        polarity = GetComponent<Polarity>();
         CalculateRaySpacing();
     }
 
@@ -34,6 +41,46 @@ public class Controller2D : MonoBehaviour
 
         if (velocity.y != 0)
             VerticalCollisions(ref velocity);
+
+        if (collisions.left)
+        {
+            for (int i = 0; i < horizontalRayCount; i++)
+            {
+                Vector2 rayOrigin = raycastOrigins.bottomLeft;
+                rayOrigin += Vector2.up * (horizontalRaySpacing * i);
+                RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.left, 0.01f, magnetMask);
+
+                if (hit)
+                    if (polarity.PlayerPolarity != hit.collider.transform.parent.GetComponent<WallMagnet>().polarity && polarity.PlayerPolarity != Polarity.Pole.NONE)
+                    {
+                        player.ResetVelocity();
+                        velocity = Vector2.up * Input.GetAxis("Vertical") * wallClimbSpeed * Time.deltaTime;
+                        VerticalCollisions(ref velocity);
+                        transform.Translate(velocity);
+                        break;
+                    }
+            }
+        }
+
+        if (collisions.right)
+        {
+            for (int i = 0; i < horizontalRayCount; i++)
+            {
+                Vector2 rayOrigin = raycastOrigins.bottomRight;
+                rayOrigin += Vector2.up * (horizontalRaySpacing * i);
+                RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right, 0.11f, magnetMask);
+
+                if (hit)
+                    if (polarity.PlayerPolarity != hit.collider.transform.parent.GetComponent<WallMagnet>().polarity && polarity.PlayerPolarity != Polarity.Pole.NONE)
+                    {
+                        player.ResetVelocity();
+                        velocity = Vector2.up * Input.GetAxis("Vertical") * wallClimbSpeed * Time.deltaTime;
+                        VerticalCollisions(ref velocity);
+                        transform.Translate(velocity);
+                        break;
+                    }
+            }
+        }
 
         transform.Translate(velocity);
     }
@@ -53,6 +100,9 @@ public class Controller2D : MonoBehaviour
 
             if (hit)
             {
+                if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Magnet"))
+                    print(true);
+
                 velocity.x = (hit.distance - skinWidth) * directionX;
                 rayLength = hit.distance;
 
