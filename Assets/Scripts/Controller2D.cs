@@ -43,46 +43,32 @@ public class Controller2D : MonoBehaviour
             VerticalCollisions(ref velocity);
 
         if (collisions.left)
-        {
-            for (int i = 0; i < horizontalRayCount; i++)
-            {
-                Vector2 rayOrigin = raycastOrigins.bottomLeft;
-                rayOrigin += Vector2.up * (horizontalRaySpacing * i);
-                RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.left, 0.01f, magnetMask);
-
-                if (hit)
-                    if (polarity.PlayerPolarity != hit.collider.transform.parent.GetComponent<WallMagnet>().polarity && polarity.PlayerPolarity != Polarity.Pole.NONE)
-                    {
-                        player.ResetVelocity();
-                        velocity = Vector2.up * Input.GetAxis("Vertical") * wallClimbSpeed * Time.deltaTime;
-                        VerticalCollisions(ref velocity);
-                        transform.Translate(velocity);
-                        break;
-                    }
-            }
-        }
+            StickToWallMagnets(Vector2.left, ref velocity);
 
         if (collisions.right)
-        {
-            for (int i = 0; i < horizontalRayCount; i++)
-            {
-                Vector2 rayOrigin = raycastOrigins.bottomRight;
-                rayOrigin += Vector2.up * (horizontalRaySpacing * i);
-                RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right, 0.11f, magnetMask);
-
-                if (hit)
-                    if (polarity.PlayerPolarity != hit.collider.transform.parent.GetComponent<WallMagnet>().polarity && polarity.PlayerPolarity != Polarity.Pole.NONE)
-                    {
-                        player.ResetVelocity();
-                        velocity = Vector2.up * Input.GetAxis("Vertical") * wallClimbSpeed * Time.deltaTime;
-                        VerticalCollisions(ref velocity);
-                        transform.Translate(velocity);
-                        break;
-                    }
-            }
-        }
+            StickToWallMagnets(Vector2.right, ref velocity);
 
         transform.Translate(velocity);
+    }
+
+    void StickToWallMagnets(Vector2 dir, ref Vector3 velocity)
+    {
+        for (int i = 0; i < horizontalRayCount; i++)
+        {
+            Vector2 rayOrigin = dir == Vector2.left ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight;
+            rayOrigin += Vector2.up * (horizontalRaySpacing * i);
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, dir, 0.1f, magnetMask);
+
+            if (hit)
+                if (polarity.PlayerPolarity != hit.collider.transform.parent.GetComponent<WallMagnet>().polarity && polarity.PlayerPolarity != Polarity.Pole.NONE)
+                {
+                    player.ResetVelocity();
+                    velocity = Vector2.up * Input.GetAxis("Vertical") * wallClimbSpeed * Time.deltaTime;
+                    VerticalCollisions(ref velocity);
+                    transform.Translate(velocity);
+                    break;
+                }
+        }
     }
 
     void HorizontalCollisions(ref Vector3 velocity)

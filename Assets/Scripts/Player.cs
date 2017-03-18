@@ -17,6 +17,8 @@ public class Player : MonoBehaviour
     Vector3 velocity;
     float velocityXSmoothing;
 
+    private Vector3 startPos;
+
     Controller2D controller;
     private Polarity polarity;
 
@@ -26,6 +28,7 @@ public class Player : MonoBehaviour
         polarity = GetComponent<Polarity>();
         gravity = -(2 * jumpHeight) / Mathf.Pow(timeToJumpApex, 2);
         jumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
+        startPos = transform.position;
     }
 
     void Update()
@@ -44,6 +47,13 @@ public class Player : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
         velocity += polarity.MagnetVelocity;
         controller.Move(velocity * Time.deltaTime);
+
+        // Reset
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            transform.position = startPos;
+            velocity = Vector3.zero;
+        }
     }
 
     public void ResetVelocity()
