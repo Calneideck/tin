@@ -12,12 +12,12 @@ public class Player : MonoBehaviour
     public float accelerationTimeGrounded = .1f;
     public float moveSpeed = 6;
 
+    private Vector3 checkpointPos;
+
     float gravity;
     float jumpVelocity;
     Vector3 velocity;
     float velocityXSmoothing;
-
-    private Vector3 startPos;
 
     Controller2D controller;
     private Polarity polarity;
@@ -28,7 +28,7 @@ public class Player : MonoBehaviour
         polarity = GetComponent<Polarity>();
         gravity = -(2 * jumpHeight) / Mathf.Pow(timeToJumpApex, 2);
         jumpVelocity = Mathf.Abs(gravity) * timeToJumpApex;
-        startPos = transform.position;
+        checkpointPos = transform.position;
     }
 
     void Update()
@@ -51,7 +51,7 @@ public class Player : MonoBehaviour
         // Reset
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            transform.position = startPos;
+            transform.position = checkpointPos;
             velocity = Vector3.zero;
         }
     }
@@ -59,5 +59,14 @@ public class Player : MonoBehaviour
     public void ResetVelocity()
     {
         velocity = Vector3.zero;
+    }
+
+    private void OnTriggerEnter2D(Collider2D coll)
+    {
+        if (coll.gameObject.tag == "Checkpoint")
+        {
+            checkpointPos = coll.transform.position;
+            print(coll.gameObject.name);
+        }
     }
 }

@@ -5,13 +5,15 @@ public class Polarity : MonoBehaviour
 {
     public enum Pole { NONE, RED, BLUE };
 
-    public float magnetForce = 1;
+    public float magnetForce = 180;
+    public float magnetBulletForce = 50;
+    public float magnetRadius;
+    public LayerMask bulletMask;
 
     private GameObject red;
     private GameObject blue;
     private Pole polarity = Pole.NONE;
     private List<WallMagnet> magnets = new List<WallMagnet>();
-    private Controller2D controller;
 
     void Start()
 	{
@@ -19,12 +21,12 @@ public class Polarity : MonoBehaviour
         red.SetActive(false);
         blue = GameObject.Find("BlueMagnet");
         blue.SetActive(false);
-        controller = GetComponent<Controller2D>();
     }
 
 	void Update()
 	{
         ChangePolarity();
+        AffectBullets();
     }
 
     void ChangePolarity()
@@ -54,6 +56,19 @@ public class Polarity : MonoBehaviour
             {
                 blue.SetActive(false);
                 polarity = Pole.NONE;
+            }
+    }
+
+    void AffectBullets()
+    {
+        if (polarity != Pole.NONE)
+            foreach (Collider2D collider in Physics2D.OverlapCircleAll(transform.position, magnetRadius, bulletMask))
+            {
+                float pct = 1 - Mathf.Clamp01((collider.transform.position - transform.position).magnitude / magnetRadius);
+                if (polarity == collider.GetComponent<Bullet>().polarity)
+                    collider.GetComponent<Bullet>().AddMagnetForce((collider.transform.position - transform.position).normalized * magnetBulletForce * pct * Time.deltaTime);
+                else
+                    collider.GetComponent<Bullet>().AddMagnetForce((transform.position - collider.transform.position).normalized * magnetBulletForce * pct * Time.deltaTime);
             }
     }
 
