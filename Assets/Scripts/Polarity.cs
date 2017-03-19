@@ -12,6 +12,7 @@ public class Polarity : MonoBehaviour
 
     private GameObject red;
     private GameObject blue;
+    private bool lTriggerDown, rTriggerDown;
     private Pole polarity = Pole.NONE;
     private List<WallMagnet> magnets = new List<WallMagnet>();
 
@@ -31,32 +32,37 @@ public class Polarity : MonoBehaviour
 
     void ChangePolarity()
     {
-        if (Input.GetButtonDown("Fire1"))
+        if (Input.GetAxisRaw("Fire1") == 1 && !lTriggerDown)
         {
             red.SetActive(true);
             polarity = Pole.RED;
+            lTriggerDown = true;
             blue.SetActive(false);
         }
-        else if (Input.GetButtonDown("Fire2"))
+
+        if (Input.GetAxisRaw("Fire2") == 1 && !rTriggerDown)
         {
             blue.SetActive(true);
+            rTriggerDown = true;
             polarity = Pole.BLUE;
             red.SetActive(false);
         }
 
-        if (Input.GetButtonUp("Fire1"))
-            if (polarity == Pole.RED)
-            {
-                red.SetActive(false);
+        if (Input.GetAxisRaw("Fire1") == 0 && lTriggerDown)
+        {
+            red.SetActive(false);
+            if (!rTriggerDown)
                 polarity = Pole.NONE;
-            }
+            lTriggerDown = false;
+        }
         
-        if (Input.GetButtonUp("Fire2"))
-            if (polarity == Pole.BLUE)
-            {
-                blue.SetActive(false);
+        if (Input.GetAxisRaw("Fire2") == 0 && rTriggerDown)
+        {
+            blue.SetActive(false);
+            if (!lTriggerDown)
                 polarity = Pole.NONE;
-            }
+            rTriggerDown = false;
+        }
     }
 
     void AffectBullets()
@@ -65,7 +71,7 @@ public class Polarity : MonoBehaviour
             foreach (Collider2D collider in Physics2D.OverlapCircleAll(transform.position, magnetRadius, bulletMask))
             {
                 float pct = 1 - Mathf.Clamp01((collider.transform.position - transform.position).magnitude / magnetRadius);
-                if (polarity == collider.GetComponent<Bullet>().polarity)
+                if (polarity == collider.GetComponent<Bullet>().Pole)
                     collider.GetComponent<Bullet>().AddMagnetForce((collider.transform.position - transform.position).normalized * magnetBulletForce * pct * Time.deltaTime);
                 else
                     collider.GetComponent<Bullet>().AddMagnetForce((transform.position - collider.transform.position).normalized * magnetBulletForce * pct * Time.deltaTime);
@@ -83,12 +89,12 @@ public class Polarity : MonoBehaviour
                 if (magnet.polarity == polarity && polarity != Pole.NONE)
                 {
                     // Repel
-                    velocity += (transform.position - magnet.transform.position).normalized * pct * magnetForce * Time.deltaTime;
+                    velocity += (transform.position - magnet.transform.position).normalized * pct * magnet.force * Time.deltaTime;
                 }
                 else if (polarity != Pole.NONE)
                 {
                     // Attract
-                    velocity += (magnet.transform.position - transform.position).normalized * pct * magnetForce * Time.deltaTime;
+                    velocity += (magnet.transform.position - transform.position).normalized * pct * magnet.force * Time.deltaTime;
                 }
             }
             return velocity;

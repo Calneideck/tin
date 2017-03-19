@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 // https://github.com/SebLague/2DPlatformer-Tutorial
@@ -11,6 +12,7 @@ public class Player : MonoBehaviour
     public float accelerationTimeAirborne = .2f;
     public float accelerationTimeGrounded = .1f;
     public float moveSpeed = 6;
+    public Text text;
 
     private Vector3 checkpointPos;
 
@@ -38,7 +40,7 @@ public class Player : MonoBehaviour
 
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
-        if (Input.GetKeyDown(KeyCode.Space) && controller.collisions.below)
+        if (Input.GetButtonDown("Jump") && controller.collisions.below)
             velocity.y = jumpVelocity;
 
         float targetVelocityX = input.x * moveSpeed;
@@ -49,11 +51,25 @@ public class Player : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
 
         // Reset
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetButtonDown("Cancel"))
         {
             transform.position = checkpointPos;
             velocity = Vector3.zero;
         }
+
+        //Cheats
+        for (int i = 1; i <= 7; i++)
+            if (Input.GetKeyDown(i.ToString()))
+            {
+                GameObject checkPoint = GameObject.Find("Checkpoint" + i);
+                if (checkPoint != null)
+                {
+                    checkpointPos = checkPoint.transform.position;
+                    transform.position = checkpointPos;
+                    velocity = Vector3.zero;
+                    break;
+                }
+            }
     }
 
     public void ResetVelocity()
@@ -63,10 +79,37 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D coll)
     {
-        if (coll.gameObject.tag == "Checkpoint")
+        if (coll.tag == "Checkpoint")
         {
             checkpointPos = coll.transform.position;
             print(coll.gameObject.name);
+
+            if (coll.gameObject.name == "Checkpoint6")
+                Camera.main.orthographicSize = 9;
+            else if (coll.gameObject.name == "Checkpoint7")
+                Camera.main.orthographicSize = 5;
+            else if (coll.gameObject.name == "Checkpoint8")
+                StartCoroutine(Fade());
+        }
+        else if (coll.tag == "Bullet")
+        {
+            transform.position = checkpointPos;
+            velocity = Vector3.zero;
+            GameObject.Destroy(coll.gameObject);
+        }
+    }
+
+    IEnumerator Fade()
+    {
+        float f = 0;
+        while (true)
+        {
+            Color c = Color.white;
+            c.a = f;
+            text.color = c;
+            Camera.main.orthographicSize = 5 + f * 15;
+            yield return new WaitForSeconds(0.02f);
+            f += 0.01f;
         }
     }
 }
