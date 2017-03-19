@@ -79,24 +79,24 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D coll)
     {
-        if (coll.tag == "Checkpoint")
-        {
-            checkpointPos = coll.transform.position;
-            print(coll.gameObject.name);
+		if (coll.tag == "Checkpoint") {
+			checkpointPos = coll.transform.position;
+			print (coll.gameObject.name);
 
-            if (coll.gameObject.name == "Checkpoint6")
-                Camera.main.orthographicSize = 9;
-            else if (coll.gameObject.name == "Checkpoint7")
-                Camera.main.orthographicSize = 5;
-            else if (coll.gameObject.name == "Checkpoint8")
-                StartCoroutine(Fade());
-        }
-        else if (coll.tag == "Bullet")
-        {
-            transform.position = checkpointPos;
-            velocity = Vector3.zero;
-            GameObject.Destroy(coll.gameObject);
-        }
+			if (coll.gameObject.name == "Checkpoint6")
+				Camera.main.orthographicSize = 9;
+			else if (coll.gameObject.name == "Checkpoint7")
+				Camera.main.orthographicSize = 5;
+			else if (coll.gameObject.name == "Checkpoint8")
+				StartCoroutine (Fade ());
+		} else if (coll.tag == "Bullet") {
+			transform.position = checkpointPos;
+			velocity = Vector3.zero;
+			GameObject.Destroy (coll.gameObject);
+		} else if (coll.tag == "KillFloor") {
+			transform.position = checkpointPos;
+			velocity = Vector3.zero;
+		}
     }
 
     IEnumerator Fade()
